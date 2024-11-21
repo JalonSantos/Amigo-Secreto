@@ -120,8 +120,12 @@
                 return;
             }
 
+            console.log("Nome digitado:", userName);  // Adicionando debug aqui
+
             // Verifica se o usuário já fez o sorteio
             const savedResult = localStorage.getItem("amigoSecreto_" + userName);
+            console.log("Resultado salvo no localStorage:", savedResult);  // Adicionando debug aqui
+
             if (savedResult) {
                 document.getElementById("result").innerHTML = `<strong>Você já sorteou: ${savedResult}!</strong>`;
                 drawButton.disabled = true;
@@ -130,6 +134,7 @@
 
             // Filtra os nomes para excluir o próprio usuário
             const filteredNames = names.filter(name => normalizeName(name).toLowerCase() !== userName.toLowerCase());
+            console.log("Nomes filtrados:", filteredNames);  // Adicionando debug aqui
 
             if (filteredNames.length === 0) {
                 document.getElementById("result").innerText = "Não há mais nomes para sortear.";
@@ -139,6 +144,7 @@
             // Sorteia um nome aleatório
             const randomIndex = Math.floor(Math.random() * filteredNames.length);
             const drawnName = filteredNames[randomIndex];
+            console.log("Nome sorteado:", drawnName);  // Adicionando debug aqui
 
             // Salva o sorteio no localStorage para evitar duplicidade
             localStorage.setItem("amigoSecreto_" + userName, drawnName);

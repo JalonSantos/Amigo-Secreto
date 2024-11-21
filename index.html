@@ -70,11 +70,11 @@
     </div>
 
     <!-- Scripts Firebase -->
-    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore.js"></script>
-
-    <script>
+    <script type="module">
         // Configuração do Firebase
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js';
+        import { getFirestore, doc, setDoc, getDoc } from 'https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore.js';
+
         const firebaseConfig = {
             apiKey: "AIzaSyB0luDWLYVo32_4sb-CZBMbzQhfOXGaWQI",
             authDomain: "amigosecreto-6f612.firebaseapp.com",
@@ -86,8 +86,8 @@
         };
 
         // Inicializando o Firebase
-        const app = firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore(app);
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
 
         // Lista de nomes para o sorteio
         const names = ["Maria Clara", "Maria Eduarda", "João", "José Carlos", "Silas", "Tury", "PR.Felipe",
@@ -102,7 +102,7 @@
         // Função para salvar o resultado no Firestore
         async function saveResult(userName, drawnName) {
             try {
-                await db.collection('sorteios').doc(userName).set({
+                await setDoc(doc(db, 'sorteios', userName), {
                     sorteio: drawnName
                 });
             } catch (error) {
@@ -113,9 +113,10 @@
         // Função para recuperar o sorteio do Firestore
         async function getResult(userName) {
             try {
-                const doc = await db.collection('sorteios').doc(userName).get();
-                if (doc.exists) {
-                    return doc.data().sorteio;
+                const docRef = doc(db, 'sorteios', userName);
+                const docSnap = await getDoc(docRef);
+                if (docSnap.exists()) {
+                    return docSnap.data().sorteio;
                 } else {
                     return null; // Não encontrou o sorteio
                 }

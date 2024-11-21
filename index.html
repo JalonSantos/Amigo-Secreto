@@ -127,13 +127,6 @@
             }
         }
 
-        // Aguardando o carregamento completo do DOM para garantir que o botão esteja disponível
-        document.addEventListener('DOMContentLoaded', () => {
-            const drawButton = document.getElementById("drawButton");
-
-            drawButton.addEventListener("click", startDraw);
-        });
-
         // Função principal do sorteio
         async function startDraw() {
             const userNameInput = document.getElementById("userName").value;
@@ -148,7 +141,7 @@
             const savedResult = await getResult(userName);
             if (savedResult) {
                 document.getElementById("result").innerHTML = `<strong>Você já sorteou: ${savedResult}!</strong>`;
-                drawButton.disabled = true;
+                document.getElementById("drawButton").disabled = true;
                 return;
             }
 
@@ -169,8 +162,15 @@
 
             // Mostrar o resultado do sorteio
             document.getElementById("result").innerHTML = `<strong>Você tirou: ${drawnName}!</strong>`;
-            drawButton.disabled = true;
+            document.getElementById("drawButton").disabled = true;
         }
+
+        // Aguardando o carregamento completo do DOM para garantir que o botão esteja disponível
+        document.addEventListener('DOMContentLoaded', () => {
+            const drawButton = document.getElementById("drawButton");
+            drawButton.addEventListener("click", startDraw);
+        });
+
     </script>
 </body>
 </html>

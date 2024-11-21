@@ -69,11 +69,11 @@
         <div class="result" id="result"></div>
     </div>
 
-    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.0.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.0.0/firebase-firestore.js"></script>
 
     <script>
-        // Configuração do Firebase
+        // Inicializando o Firebase
         const firebaseConfig = {
             apiKey: "AIzaSyB0luDWLYVo32_4sb-CZBMbzQhfOXGaWQI",
             authDomain: "amigosecreto-6f612.firebaseapp.com",
@@ -85,8 +85,8 @@
         };
 
         // Inicializando o Firebase
-        const app = firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore(app);
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
 
         // Lista de nomes para o sorteio
         const names = ["Maria Clara", "Maria Eduarda", "João", "José Carlos", "Silas", "Tury", "PR.Felipe",
@@ -105,36 +105,12 @@
 
         // Função para normalizar os nomes (caso o usuário use variações)
         function normalizeName(inputName) {
+            inputName = inputName.trim().toUpperCase();  // Garantir que o nome seja sempre maiúsculo
             return nameVariations[inputName] || inputName;
         }
 
-        // Função para salvar o resultado no Firestore
-        async function saveResult(userName, drawnName) {
-            try {
-                await db.collection('sorteios').doc(userName).set({
-                    sorteio: drawnName
-                });
-            } catch (error) {
-                console.error("Erro ao salvar resultado no Firestore:", error);
-            }
-        }
-
-        // Função para recuperar o sorteio do Firestore
-        async function getResult(userName) {
-            try {
-                const doc = await db.collection('sorteios').doc(userName).get();
-                if (doc.exists) {
-                    return doc.data().sorteio;
-                } else {
-                    return null; // Não encontrou o sorteio
-                }
-            } catch (error) {
-                console.error("Erro ao buscar sorteio no Firestore:", error);
-                return null;
-            }
-        }
-
-        async function startDraw() {
+        // Função para iniciar o sorteio
+        function startDraw() {
             const userNameInput = document.getElementById("userName").value.trim();
             const userName = normalizeName(userNameInput);
             const drawButton = document.getElementById("drawButton");
@@ -144,15 +120,15 @@
                 return;
             }
 
-            // Verificar se o resultado já foi sorteado para o usuário
-            const savedResult = await getResult(userName);
+            // Verifica se o usuário já fez o sorteio
+            const savedResult = localStorage.getItem("amigoSecreto_" + userName);
             if (savedResult) {
                 document.getElementById("result").innerHTML = `<strong>Você já sorteou: ${savedResult}!</strong>`;
                 drawButton.disabled = true;
                 return;
             }
 
-            // Filtra os nomes para garantir que o usuário não sorteie a si mesmo
+            // Filtra os nomes para excluir o próprio usuário
             const filteredNames = names.filter(name => normalizeName(name).toLowerCase() !== userName.toLowerCase());
 
             if (filteredNames.length === 0) {
@@ -160,14 +136,14 @@
                 return;
             }
 
-            // Sorteio aleatório
+            // Sorteia um nome aleatório
             const randomIndex = Math.floor(Math.random() * filteredNames.length);
             const drawnName = filteredNames[randomIndex];
 
-            // Salvar o resultado no Firestore
-            await saveResult(userName, drawnName);
+            // Salva o sorteio no localStorage para evitar duplicidade
+            localStorage.setItem("amigoSecreto_" + userName, drawnName);
 
-            // Mostrar o resultado do sorteio
+            // Exibe o resultado do sorteio
             document.getElementById("result").innerHTML = `<strong>Você tirou: ${drawnName}!</strong>`;
             drawButton.disabled = true;
         }

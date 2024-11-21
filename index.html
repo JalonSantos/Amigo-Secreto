@@ -69,12 +69,12 @@
         <div class="result" id="result"></div>
     </div>
 
-    <!-- Corrigir a importação do Firebase usando CDN com a versão adequada -->
-    <script src="https://www.gstatic.com/firebasejs/9.18.0/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.18.0/firebase-firestore.js"></script>
+    <!-- Usar o Firebase SDK mais simples com CDN -->
+    <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-firestore.js"></script>
 
     <script>
-        // Inicializando o Firebase com a versão mais recente
+        // Inicializando o Firebase com a versão 8.6.8 (não usa módulos, mais compatível com navegadores)
         const firebaseConfig = {
             apiKey: "AIzaSyB0luDWLYVo32_4sb-CZBMbzQhfOXGaWQI",
             authDomain: "amigosecreto-6f612.firebaseapp.com",
@@ -86,8 +86,8 @@
         };
 
         // Inicializando o Firebase
-        const app = firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore(app);
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
 
         // Lista de nomes para o sorteio
         const names = ["Maria Clara", "Maria Eduarda", "João", "José Carlos", "Silas", "Tury", "PR.Felipe",

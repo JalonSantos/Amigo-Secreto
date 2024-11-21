@@ -69,11 +69,12 @@
         <div class="result" id="result"></div>
     </div>
 
-    <script src="https://www.gstatic.com/firebasejs/8.0.0/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.0.0/firebase-firestore.js"></script>
+    <!-- Scripts Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore.js"></script>
 
     <script>
-        // Inicializando o Firebase
+        // Configuração do Firebase
         const firebaseConfig = {
             apiKey: "AIzaSyB0luDWLYVo32_4sb-CZBMbzQhfOXGaWQI",
             authDomain: "amigosecreto-6f612.firebaseapp.com",
@@ -85,33 +86,48 @@
         };
 
         // Inicializando o Firebase
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore();
+        const app = firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore(app);
 
         // Lista de nomes para o sorteio
         const names = ["Maria Clara", "Maria Eduarda", "João", "José Carlos", "Silas", "Tury", "PR.Felipe",
             "Mayane", "Fernanda", "Alexsandro", "Caio", "Gabrielle", "Gleidson", "Jalon", "Ary", "Ana Julia", "Julia",
             "Bernardo", "Emanuelle", "Bruno"];
 
-        // Definição das variações de nomes
-        const nameVariations = {
-            "M. Clara": "Maria Clara",
-            "Clara": "Maria Clara",
-            "M. Eduarda": "Maria Eduarda",
-            "Eduarda": "Maria Eduarda",
-            "Alex": "Alexsandro",
-            "Alexsandro": "Alexsandro"
-        };
-
         // Função para normalizar os nomes (caso o usuário use variações)
         function normalizeName(inputName) {
-            return nameVariations[inputName] || inputName;
+            return inputName.trim().toUpperCase(); // Apenas transforma o nome em maiúsculas
         }
 
-        // Função para iniciar o sorteio
-        function startDraw() {
-            const userNameInput = document.getElementById("userName").value.trim();
-            const userName = normalizeName(userNameInput);
+        // Função para salvar o resultado no Firestore
+        async function saveResult(userName, drawnName) {
+            try {
+                await db.collection('sorteios').doc(userName).set({
+                    sorteio: drawnName
+                });
+            } catch (error) {
+                console.error("Erro ao salvar resultado no Firestore:", error);
+            }
+        }
+
+        // Função para recuperar o sorteio do Firestore
+        async function getResult(userName) {
+            try {
+                const doc = await db.collection('sorteios').doc(userName).get();
+                if (doc.exists) {
+                    return doc.data().sorteio;
+                } else {
+                    return null; // Não encontrou o sorteio
+                }
+            } catch (error) {
+                console.error("Erro ao buscar sorteio no Firestore:", error);
+                return null;
+            }
+        }
+
+        async function startDraw() {
+            const userNameInput = document.getElementById("userName").value;
+            const userName = normalizeName(userNameInput); // Garantir que o nome está em maiúsculas
             const drawButton = document.getElementById("drawButton");
 
             if (!userName) {
@@ -119,30 +135,30 @@
                 return;
             }
 
-            // Verifica se o usuário já fez o sorteio
-            const savedResult = localStorage.getItem("amigoSecreto_" + userName);
+            // Verificar se o resultado já foi sorteado para o usuário
+            const savedResult = await getResult(userName);
             if (savedResult) {
                 document.getElementById("result").innerHTML = `<strong>Você já sorteou: ${savedResult}!</strong>`;
                 drawButton.disabled = true;
                 return;
             }
 
-            // Filtra os nomes para excluir o próprio usuário
-            const filteredNames = names.filter(name => normalizeName(name).toLowerCase() !== userName.toLowerCase());
+            // Filtra os nomes para garantir que o usuário não sorteie a si mesmo
+            const filteredNames = names.filter(name => normalizeName(name) !== userName);
 
             if (filteredNames.length === 0) {
                 document.getElementById("result").innerText = "Não há mais nomes para sortear.";
                 return;
             }
 
-            // Sorteia um nome aleatório
+            // Sorteio aleatório
             const randomIndex = Math.floor(Math.random() * filteredNames.length);
             const drawnName = filteredNames[randomIndex];
 
-            // Salva o sorteio no localStorage para evitar duplicidade
-            localStorage.setItem("amigoSecreto_" + userName, drawnName);
+            // Salvar o resultado no Firestore
+            await saveResult(userName, drawnName);
 
-            // Exibe o resultado do sorteio
+            // Mostrar o resultado do sorteio
             document.getElementById("result").innerHTML = `<strong>Você tirou: ${drawnName}!</strong>`;
             drawButton.disabled = true;
         }

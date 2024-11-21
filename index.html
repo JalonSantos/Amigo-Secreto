@@ -60,7 +60,7 @@
     <div class="container">
         <h1>Bem-vindo ao Amigo Secreto!</h1>
         <h2>Data: 36 de Dezembro</h2>
-        <h2>Local: Algum local no planeta Terra</h2>
+        <h2>Local: Algum local no planeta Terra </h2>
         <p>Insira seu nome abaixo e clique em "Sortear" para descobrir quem será seu amigo secreto!</p>
         
         <input type="text" id="userName" placeholder="Digite seu nome aqui">
@@ -69,31 +69,13 @@
         <div class="result" id="result"></div>
     </div>
 
-    <!-- Firebase SDK -->
-<script src="https://www.gstatic.com/firebasejs/8.0.0/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.0.0/firebase-firestore.js"></script>
-
-
     <script>
-        // Configuração do Firebase
-        const firebaseConfig = {
-            apiKey: "AIzaSyB0luDWLYVo32_4sb-CZBMbzQhfOXGaWQI",
-            authDomain: "amigosecreto-6f612.firebaseapp.com",
-            projectId: "amigosecreto-6f612",
-            storageBucket: "amigosecreto-6f612.firebasestorage.app",
-            messagingSenderId: "451995498899",
-            appId: "1:451995498899:web:038e98ff1742ff581d9066"
-        };
-
-        // Inicializando o Firebase
-        const app = firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore(app);
-
-        // Lista de participantes
+        // Lista de nomes para o sorteio
         const names = ["Maria Clara", "Maria Eduarda", "João", "José Carlos", "Silas", "Tury", "PR.Felipe",
             "Mayane", "Fernanda", "Alexsandro", "Caio", "Gabrielle", "Gleidson", "Jalon", "Ary", "Ana Julia", "Julia",
             "Bernardo", "Emanuelle", "Bruno"];
 
+        // Definição das variações de nomes
         const nameVariations = {
             "M. Clara": "Maria Clara",
             "Clara": "Maria Clara",
@@ -103,65 +85,71 @@
             "Alexsandro": "Alexsandro"
         };
 
+        // Função para normalizar os nomes (caso o usuário use variações)
         function normalizeName(inputName) {
             return nameVariations[inputName] || inputName;
         }
 
-        async function checkIfUserAlreadyDrew(userName) {
-            try {
-                const doc = await db.collection("sorteios").doc(userName).get();
-                return doc.exists ? doc.data().amigoSecreto : null;
-            } catch (error) {
-                console.error("Erro ao verificar sorteio:", error);
-                alert("Ocorreu um erro ao verificar seu sorteio. Tente novamente mais tarde.");
-                return null;
-            }
-        }
-
-        async function saveDrawResult(userName, drawnName) {
-            try {
-                await db.collection("sorteios").doc(userName).set({
-                    amigoSecreto: drawnName
-                });
-            } catch (error) {
-                console.error("Erro ao salvar sorteio:", error);
-                alert("Ocorreu um erro ao salvar seu sorteio. Tente novamente.");
-            }
-        }
-
-        async function startDraw() {
+        // Função para iniciar o sorteio
+        function startDraw() {
             const userNameInput = document.getElementById("userName").value.trim();
             const userName = normalizeName(userNameInput);
+            const drawButton = document.getElementById("drawButton");
 
             if (!userName) {
                 alert("Por favor, insira seu nome.");
                 return;
             }
 
-            if (!names.includes(userName)) {
-                alert("Nome não encontrado na lista de participantes.");
-                return;
-            }
-
-            const savedResult = await checkIfUserAlreadyDrew(userName);
+            // Verifica se o usuário já fez o sorteio
+            const savedResult = localStorage.getItem("amigoSecreto_" + userName);
             if (savedResult) {
                 document.getElementById("result").innerHTML = `<strong>Você já sorteou: ${savedResult}!</strong>`;
+                drawButton.disabled = true;
                 return;
             }
 
+            // Filtra os nomes para excluir o próprio usuário
             const filteredNames = names.filter(name => normalizeName(name).toLowerCase() !== userName.toLowerCase());
+
             if (filteredNames.length === 0) {
                 document.getElementById("result").innerText = "Não há mais nomes para sortear.";
                 return;
             }
 
+            // Sorteia um nome aleatório
             const randomIndex = Math.floor(Math.random() * filteredNames.length);
             const drawnName = filteredNames[randomIndex];
 
-            await saveDrawResult(userName, drawnName);
+            // Salva o sorteio no localStorage para evitar duplicidade
+            localStorage.setItem("amigoSecreto_" + userName, drawnName);
 
+            // Exibe o resultado do sorteio
             document.getElementById("result").innerHTML = `<strong>Você tirou: ${drawnName}!</strong>`;
+            drawButton.disabled = true;
         }
     </script>
+
+    <!-- Firebase SDK (Versões não modulares) -->
+    <script src="https://www.gstatic.com/firebasejs/8.0.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.0.0/firebase-firestore.js"></script>
+
+    <script>
+        // Configuração do Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyB0luDWLYVo32_4sb-CZBMbzQhfOXGaWQI",
+            authDomain: "amigosecreto-6f612.firebaseapp.com",
+            projectId: "amigosecreto-6f612",
+            storageBucket: "amigosecreto-6f612.firebasestorage.app",
+            messagingSenderId: "451995498899",
+            appId: "1:451995498899:web:038e98ff1742ff581d9066",
+            measurementId: "G-8X7LQ4HH6K"
+        };
+
+        // Inicializando o Firebase
+        const app = firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore(app);
+    </script>
+
 </body>
 </html>

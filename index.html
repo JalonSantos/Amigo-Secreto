@@ -69,7 +69,25 @@
         <div class="result" id="result"></div>
     </div>
 
+    <script src="https://www.gstatic.com/firebasejs/8.0.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.0.0/firebase-firestore.js"></script>
+
     <script>
+        // Inicializando o Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyB0luDWLYVo32_4sb-CZBMbzQhfOXGaWQI",
+            authDomain: "amigosecreto-6f612.firebaseapp.com",
+            projectId: "amigosecreto-6f612",
+            storageBucket: "amigosecreto-6f612.firebasestorage.app",
+            messagingSenderId: "451995498899",
+            appId: "1:451995498899:web:038e98ff1742ff581d9066",
+            measurementId: "G-8X7LQ4HH6K"
+        };
+
+        // Inicializando o Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
         // Lista de nomes para o sorteio
         const names = ["Maria Clara", "Maria Eduarda", "João", "José Carlos", "Silas", "Tury", "PR.Felipe",
             "Mayane", "Fernanda", "Alexsandro", "Caio", "Gabrielle", "Gleidson", "Jalon", "Ary", "Ana Julia", "Julia",
@@ -128,28 +146,6 @@
             document.getElementById("result").innerHTML = `<strong>Você tirou: ${drawnName}!</strong>`;
             drawButton.disabled = true;
         }
-    </script>
-
-    <!-- Firebase SDK (Versões Modulares) -->
-    <script type="module">
-        // Importando as bibliotecas do Firebase
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js";
-        import { getFirestore } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore.js";
-
-        // Configuração do Firebase
-        const firebaseConfig = {
-            apiKey: "AIzaSyB0luDWLYVo32_4sb-CZBMbzQhfOXGaWQI",
-            authDomain: "amigosecreto-6f612.firebaseapp.com",
-            projectId: "amigosecreto-6f612",
-            storageBucket: "amigosecreto-6f612.firebasestorage.app",
-            messagingSenderId: "451995498899",
-            appId: "1:451995498899:web:038e98ff1742ff581d9066",
-            measurementId: "G-8X7LQ4HH6K"
-        };
-
-        // Inicializando o Firebase
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
     </script>
 </body>
 </html>

@@ -117,6 +117,7 @@
             return;
         }
 
+        // Filtrando a lista para não incluir o nome do próprio usuário
         const filteredNames = names.filter(name => normalizeName(name) !== userName);
         const randomIndex = Math.floor(Math.random() * filteredNames.length);
         const drawnName = filteredNames[randomIndex];

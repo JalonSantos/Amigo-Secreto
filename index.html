@@ -59,8 +59,6 @@
 <body>
     <div class="container">
         <h1>Bem-vindo ao Amigo Secreto!</h1>
-        <h2>Data: 36 de Dezembro</h2>
-        <h2>Local: Algum local no planeta Terra</h2>
         <p>Insira seu nome abaixo e clique em "Sortear" para descobrir quem será seu amigo secreto!</p>
 
         <input type="text" id="userName" placeholder="Digite seu nome aqui">
@@ -74,36 +72,57 @@
         document.addEventListener('DOMContentLoaded', () => {
             const drawButton = document.getElementById("drawButton");
             const resetButton = document.getElementById("resetButton");
+            const resultDiv = document.getElementById("result");
+
+            const names = ["Mayane", "Fernanda", "Alexsandro", "Jalon", "Ary", "Bernardo", "Emanuelle", "Bruno"];
 
             // Função para sortear
-            async function startDraw() {
-                const userNameInput = document.getElementById("userName").value.trim();
-                if (!userNameInput) {
+            function startDraw() {
+                const userName = document.getElementById("userName").value.trim();
+
+                if (!userName) {
                     alert("Por favor, insira seu nome.");
                     return;
                 }
 
-                // Simulação de sorteio (você pode ajustar com a lógica do Firebase)
-                const names = ["Mayane", "Fernanda", "Alexsandro", "Jalon", "Ary", "Bernardo", "Emanuelle", "Bruno"];
-                const randomIndex = Math.floor(Math.random() * names.length);
-                const drawnName = names[randomIndex];
+                // Verifica se o usuário já fez o sorteio
+                const storedResult = localStorage.getItem(userName);
 
-                document.getElementById("result").innerHTML = `<strong>Você tirou: ${drawnName}!</strong>`;
-                drawButton.disabled = true;
-                resetButton.style.display = "block"; // Mostra o botão de reset
+                if (storedResult) {
+                    resultDiv.innerHTML = `<strong>${userName}, você já tirou: ${storedResult}!</strong>`;
+                    return;
+                }
+
+                // Sorteia um nome aleatório que ainda não foi sorteado
+                const availableNames = names.filter(name => !Object.values(localStorage).includes(name));
+
+                if (availableNames.length === 0) {
+                    resultDiv.innerHTML = "<strong>Todos os nomes já foram sorteados!</strong>";
+                    return;
+                }
+
+                const randomIndex = Math.floor(Math.random() * availableNames.length);
+                const drawnName = availableNames[randomIndex];
+
+                // Armazena o resultado no localStorage
+                localStorage.setItem(userName, drawnName);
+
+                resultDiv.innerHTML = `<strong>${userName}, você tirou: ${drawnName}!</strong>`;
             }
 
-            // Função para resetar sorteio
+            // Função para resetar sorteio (usada via console)
             function resetDraw() {
-                document.getElementById("userName").value = "";
-                document.getElementById("result").innerHTML = "";
-                drawButton.disabled = false;
-                resetButton.style.display = "none"; // Esconde o botão de reset
+                localStorage.clear();
+                location.reload();
             }
 
-            // Eventos
             drawButton.addEventListener("click", startDraw);
             resetButton.addEventListener("click", resetDraw);
+
+            // Faz o botão de reset aparecer apenas via console
+            window.showResetButton = function () {
+                resetButton.style.display = "block";
+            };
         });
     </script>
 </body>

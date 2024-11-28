@@ -100,11 +100,21 @@
                 if (password === "195273") {
                     await resetFirestore();
                     document.getElementById("result").innerHTML = "";
-                    document.getElementById("drawButton").disabled = false;
+                    document.getElementById("drawButton").disabled = false; // Habilitar o botão para o sorteio
                 } else {
                     alert("Senha incorreta. Acesso negado.");
                 }
             });
         }
+
+        // Verificar se o sorteio foi resetado e garantir que o botão de sorteio esteja disponível
+        const userNameInput = document.getElementById("userName").value;
+        const userName = normalizeName(userNameInput);
+        getResult(userName).then((savedResult) => {
+            if (!savedResult) {
+                document.getElementById("drawButton").disabled = false; // Habilitar o botão de sorteio se o sorteio foi resetado
+                document.getElementById("result").innerHTML = "";
+            }
+        });
     });
 </script>

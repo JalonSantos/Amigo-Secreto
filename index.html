@@ -1,116 +1,180 @@
-<script type="module">
-    // Importando módulos do Firebase via CDN
-    import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js';
-    import { getFirestore, doc, setDoc, getDoc } from 'https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore.js';
-
-    // Configuração do Firebase
-    const firebaseConfig = {
-        apiKey: "AIzaSyB0luDWLYVo32_4sb-CZBMbzQhfOXGaWQI",
-        authDomain: "amigosecreto-6f612.firebaseapp.com",
-        projectId: "amigosecreto-6f612",
-        storageBucket: "amigosecreto-6f612.firebasestorage.app",
-        messagingSenderId: "451995498899",
-        appId: "1:451995498899:web:038e98ff1742ff581d9066",
-        measurementId: "G-8X7LQ4HH6K"
-    };
-
-    // Inicializando o Firebase
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
-
-    // Lista de nomes para o sorteio
-    const names = ["Mayane", "Fernanda", "Alexsandro", "Jalon", "Ary", "Bernardo", "Emanuelle", "Bruno"];
-
-    // Função para normalizar os nomes
-    function normalizeName(inputName) {
-        return inputName.trim().toUpperCase();
-    }
-
-    // Função para salvar o resultado no Firestore
-    async function saveResult(userName, drawnName) {
-        try {
-            await setDoc(doc(db, 'sorteios', userName), { sorteio: drawnName });
-            localStorage.setItem(userName, drawnName); // Salva no Local Storage
-        } catch (error) {
-            console.error("Erro ao salvar resultado no Firestore:", error);
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Amigo Secreto</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            color: #333;
+            text-align: center;
+            margin: 0;
+            padding: 20px;
         }
-    }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        h1, h2 {
+            color: #555;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            margin: 10px 0;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+        input {
+            padding: 10px;
+            width: 100%;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        .result {
+            margin-top: 20px;
+            font-size: 18px;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Bem-vindo ao Amigo Secreto!</h1>
+        <h2>Data: 36 de Dezembro</h2>
+        <h2>Local: Algum local no planeta Terra</h2>
+        <p>Insira seu nome abaixo e clique em "Sortear" para descobrir quem será seu amigo secreto!</p>
+        
+        <input type="text" id="userName" placeholder="Digite seu nome aqui">
+        <button id="drawButton">Sortear</button>
+        
+        <div class="result" id="result"></div>
 
-    // Função para recuperar o sorteio do Firestore
-    async function getResult(userName) {
-        try {
-            const localResult = localStorage.getItem(userName);
-            if (localResult) {
-                return localResult;
+        <!-- Botão de reset escondido -->
+        <button id="resetButton" style="display: none; background-color: #f44336;">Resetar Sorteio</button>
+    </div>
+
+    <!-- Scripts Firebase -->
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js';
+        import { getFirestore, doc, setDoc, getDoc, deleteDoc, collection, getDocs } from 'https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore.js';
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyB0luDWLYVo32_4sb-CZBMbzQhfOXGaWQI",
+            authDomain: "amigosecreto-6f612.firebaseapp.com",
+            projectId: "amigosecreto-6f612",
+            storageBucket: "amigosecreto-6f612.firebasestorage.app",
+            messagingSenderId: "451995498899",
+            appId: "1:451995498899:web:038e98ff1742ff581d9066",
+            measurementId: "G-8X7LQ4HH6K"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        const names = ["Mayane", "Fernanda", "Alexsandro", "Jalon", "Ary", "Bernardo", "Emanuelle", "Bruno"];
+
+        function normalizeName(inputName) {
+            return inputName.trim().toUpperCase();
+        }
+
+        async function saveResult(userName, drawnName) {
+            try {
+                await setDoc(doc(db, 'sorteios', userName), { sorteio: drawnName });
+            } catch (error) {
+                console.error("Erro ao salvar resultado no Firestore:", error);
             }
-            const docRef = doc(db, 'sorteios', userName);
-            const docSnap = await getDoc(docRef);
-            if (docSnap.exists()) {
-                return docSnap.data().sorteio;
-            } else {
+        }
+
+        async function getResult(userName) {
+            try {
+                const docRef = doc(db, 'sorteios', userName);
+                const docSnap = await getDoc(docRef);
+                if (docSnap.exists()) {
+                    return docSnap.data().sorteio;
+                } else {
+                    return null;
+                }
+            } catch (error) {
+                console.error("Erro ao buscar sorteio no Firestore:", error);
                 return null;
             }
-        } catch (error) {
-            console.error("Erro ao buscar sorteio no Firestore:", error);
-            return null;
-        }
-    }
-
-    // Função principal do sorteio
-    async function startDraw() {
-        const userNameInput = document.getElementById("userName").value;
-        const userName = normalizeName(userNameInput);
-
-        if (!userName) {
-            alert("Por favor, insira seu nome.");
-            return;
         }
 
-        // Verificar se o resultado já foi sorteado para o usuário (Local Storage + Firestore)
-        const savedResult = await getResult(userName);
-        if (savedResult) {
-            document.getElementById("result").innerHTML = `<strong>Você já sorteou: ${savedResult}!</strong>`;
-            document.getElementById("drawButton").disabled = true;
-            return;
-        }
+        async function startDraw() {
+            const userNameInput = document.getElementById("userName").value;
+            const userName = normalizeName(userNameInput);
 
-        // Filtra os nomes para garantir que o usuário não sorteie a si mesmo
-        const filteredNames = names.filter(name => normalizeName(name) !== userName);
+            if (!userName) {
+                alert("Por favor, insira seu nome.");
+                return;
+            }
 
-        if (filteredNames.length === 0) {
-            document.getElementById("result").innerText = "Não há mais nomes para sortear.";
-            return;
-        }
-
-        // Sorteio aleatório
-        const randomIndex = Math.floor(Math.random() * filteredNames.length);
-        const drawnName = filteredNames[randomIndex];
-
-        // Salvar o resultado no Firestore e Local Storage
-        await saveResult(userName, drawnName);
-
-        // Mostrar o resultado do sorteio
-        document.getElementById("result").innerHTML = `<strong>Você tirou: ${drawnName}!</strong>`;
-        document.getElementById("drawButton").disabled = true;
-    }
-
-    // Aguardando o carregamento completo do DOM
-    document.addEventListener('DOMContentLoaded', async () => {
-        const drawButton = document.getElementById("drawButton");
-        drawButton.addEventListener("click", startDraw);
-
-        // Verifica no Local Storage se já existe um sorteio
-        const userNameInput = document.getElementById("userName");
-        userNameInput.addEventListener("input", async () => {
-            const userName = normalizeName(userNameInput.value);
-            const savedResult = localStorage.getItem(userName);
+            const savedResult = await getResult(userName);
             if (savedResult) {
                 document.getElementById("result").innerHTML = `<strong>Você já sorteou: ${savedResult}!</strong>`;
-                drawButton.disabled = true;
-            } else {
-                drawButton.disabled = false;
-                document.getElementById("result").innerHTML = "";
+                document.getElementById("drawButton").disabled = true;
+                return;
             }
+
+            const filteredNames = names.filter(name => normalizeName(name) !== userName);
+
+            if (filteredNames.length === 0) {
+                document.getElementById("result").innerText = "Não há mais nomes para sortear.";
+                return;
+            }
+
+            const randomIndex = Math.floor(Math.random() * filteredNames.length);
+            const drawnName = filteredNames[randomIndex];
+
+            await saveResult(userName, drawnName);
+            document.getElementById("result").innerHTML = `<strong>Você tirou: ${drawnName}!</strong>`;
+            document.getElementById("drawButton").disabled = true;
+        }
+
+        async function resetFirestore() {
+            const collectionRef = collection(db, 'sorteios');
+            const querySnapshot = await getDocs(collectionRef);
+
+            querySnapshot.forEach(async (docSnap) => {
+                await deleteDoc(doc(db, 'sorteios', docSnap.id));
+            });
+
+            alert("Sorteio resetado com sucesso!");
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById("drawButton").addEventListener("click", startDraw);
+
+            document.getElementById("resetButton").addEventListener("click", async () => {
+                const password = prompt("Digite a senha para resetar o sorteio:");
+                if (password === "195273") { // Altere para sua senha
+                    await resetFirestore();
+                    document.getElementById("result").innerHTML = "";
+                    document.getElementById("drawButton").disabled = false;
+                } else {
+                    alert("Senha incorreta. Acesso negado.");
+                }
+            });
         });
-    });
-</script>
+    </script>
+</body>
+</html>

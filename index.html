@@ -14,7 +14,6 @@
 
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
-
     const names = ["Mayane", "Fernanda", "Alexsandro", "Jalon", "Ary", "Bernardo", "Emanuelle", "Bruno"];
 
     function normalizeName(inputName) {
@@ -74,11 +73,12 @@
 
     document.addEventListener('DOMContentLoaded', async () => {
         const drawButton = document.getElementById("drawButton");
-        const storedData = JSON.parse(localStorage.getItem('amigoSecreto'));
+        const storedData = localStorage.getItem('amigoSecreto');
 
-        if (storedData && storedData.userName) {
-            document.getElementById("userName").value = storedData.userName;
-            document.getElementById("result").innerHTML = `<strong>Você tirou: ${storedData.drawnName}!</strong>`;
+        if (storedData) {
+            const { userName, drawnName } = JSON.parse(storedData);
+            document.getElementById("userName").value = userName;
+            document.getElementById("result").innerHTML = `<strong>Você tirou: ${drawnName}!</strong>`;
             drawButton.disabled = true;
         } else {
             drawButton.addEventListener("click", startDraw);

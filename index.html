@@ -48,6 +48,11 @@
             border: 1px solid #ccc;
             border-radius: 5px;
             font-size: 16px;
+            text-align: center;
+        }
+        input[disabled] {
+            background-color: #f9f9f9;
+            color: #aaa;
         }
         .result {
             margin-top: 20px;
@@ -60,11 +65,11 @@
     <div class="container">
         <h1>Bem-vindo ao Amigo Secreto!</h1>
         <h2>Data: 36 de Dezembro</h2>
-        <h2>Local: Algum local no planeta Terra </h2>
+        <h2>Local: Algum lugar especial!</h2>
         <p>Insira seu nome abaixo e clique em "Sortear" para descobrir quem será seu amigo secreto!</p>
         
-        <input type="text" id="userName" placeholder="Digite seu nome aqui">
-        <button id="drawButton">Sortear</button>
+        <input type="text" id="userName" placeholder="Digite seu nome aqui" disabled>
+        <button id="drawButton" disabled>Sortear</button>
         
         <div class="result" id="result"></div>
     </div>
@@ -112,18 +117,10 @@
         }
 
         async function startDraw() {
-            const userNameInput = document.getElementById("userName").value;
-            const userName = normalizeName(userNameInput);
+            const userName = normalizeName(document.getElementById("userName").value);
 
             if (!userName) {
                 alert("Por favor, insira seu nome.");
-                return;
-            }
-
-            const savedResult = await getResult(userName);
-            if (savedResult) {
-                document.getElementById("result").innerHTML = `<strong>Você já sorteou: ${savedResult}!</strong>`;
-                document.getElementById("drawButton").disabled = true;
                 return;
             }
 
@@ -137,22 +134,38 @@
             const drawnName = filteredNames[randomIndex];
 
             await saveResult(userName, drawnName);
-
             document.getElementById("result").innerHTML = `<strong>Você tirou: ${drawnName}!</strong>`;
-            document.getElementById("drawButton").disabled = true;
         }
 
         document.addEventListener('DOMContentLoaded', async () => {
+            const userNameInput = document.getElementById("userName");
             const drawButton = document.getElementById("drawButton");
             const storedData = localStorage.getItem('amigoSecreto');
 
             if (storedData) {
                 const { userName, drawnName } = JSON.parse(storedData);
-                document.getElementById("userName").value = userName;
                 document.getElementById("result").innerHTML = `<strong>Você tirou: ${drawnName}!</strong>`;
+                userNameInput.value = userName;
                 drawButton.disabled = true;
+                userNameInput.disabled = true;
             } else {
-                drawButton.addEventListener("click", startDraw);
+                userNameInput.disabled = false;
+                drawButton.disabled = false;
+
+                drawButton.addEventListener("click", async () => {
+                    const userName = normalizeName(userNameInput.value);
+                    const existingResult = await getResult(userName);
+
+                    if (existingResult) {
+                        document.getElementById("result").innerHTML = `<strong>Você já tirou: ${existingResult}!</strong>`;
+                        drawButton.disabled = true;
+                        userNameInput.disabled = true;
+                    } else {
+                        await startDraw();
+                        drawButton.disabled = true;
+                        userNameInput.disabled = true;
+                    }
+                });
             }
         });
     </script>

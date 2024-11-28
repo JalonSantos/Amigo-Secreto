@@ -5,79 +5,33 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Amigo Secreto</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
-            color: #333;
-            text-align: center;
-            margin: 0;
-            padding: 20px;
-        }
-        .container {
-            max-width: 600px;
-            margin: 0 auto;
-            background: #fff;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-        }
-        h1, h2 {
-            color: #555;
-        }
-        button {
-            background-color: #4CAF50;
-            color: white;
-            padding: 10px 20px;
-            margin: 10px 0;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 16px;
-        }
-        button:hover {
-            background-color: #45a049;
-        }
-        button:disabled {
-            background-color: #ccc;
-            cursor: not-allowed;
-        }
-        input {
-            padding: 10px;
-            width: 100%;
-            margin-bottom: 10px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            font-size: 16px;
-            text-align: center;
-        }
-        input[disabled] {
-            background-color: #f9f9f9;
-            color: #aaa;
-        }
-        .result {
-            margin-top: 20px;
-            font-size: 18px;
-            color: #333;
-        }
+        /* Adicione seu estilo aqui */
     </style>
 </head>
 <body>
     <div class="container">
         <h1>Bem-vindo ao Amigo Secreto!</h1>
-        <h2>Data: 36 de Dezembro</h2>
-        <h2>Local: Algum lugar especial!</h2>
-        <p>Insira seu nome abaixo e clique em "Sortear" para descobrir quem será seu amigo secreto!</p>
-        
-        <input type="text" id="userName" placeholder="Digite seu nome aqui" disabled>
-        <button id="drawButton" disabled>Sortear</button>
+        <p>Insira seu nome e senha para participar do sorteio.</p>
+
+        <div id="nameInput">
+            <input type="text" id="userName" placeholder="Digite seu nome aqui">
+            <button id="nextButton">Próximo</button>
+        </div>
+
+        <div id="passwordInput" style="display: none;">
+            <input type="password" id="password" placeholder="Crie uma senha">
+            <button id="startDraw">Sortear</button>
+        </div>
         
         <div class="result" id="result"></div>
     </div>
 
-    <script type="module">
-        import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js';
-        import { getFirestore, doc, setDoc, getDoc } from 'https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore.js';
+    <!-- Importando o Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/9.17.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.17.0/firebase-firestore.js"></script>
 
+    <script type="module">
+        // Sua configuração do Firebase
         const firebaseConfig = {
             apiKey: "AIzaSyB0luDWLYVo32_4sb-CZBMbzQhfOXGaWQI",
             authDomain: "amigosecreto-6f612.firebaseapp.com",
@@ -88,41 +42,37 @@
             measurementId: "G-8X7LQ4HH6K"
         };
 
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-        const names = ["Mayane", "Fernanda", "Alexsandro", "Jalon", "Ary", "Bernardo", "Emanuelle", "Bruno"];
+        // Inicializando o Firebase
+        const app = firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore(app);
 
+        const names = ["Mayane", "Fernanda", "Alexsandro", "Jalon", "Ary", "Bernardo", "Emanuelle", "Bruno"];
+        
         function normalizeName(inputName) {
             return inputName.trim().toUpperCase();
         }
 
-        async function saveResult(userName, drawnName) {
-            try {
-                await setDoc(doc(db, 'sorteios', userName), { sorteio: drawnName });
-                localStorage.setItem('amigoSecreto', JSON.stringify({ userName, drawnName }));
-            } catch (error) {
-                console.error("Erro ao salvar no Firestore:", error);
-            }
-        }
-
-        async function getResult(userName) {
-            try {
-                const docRef = doc(db, 'sorteios', userName);
-                const docSnap = await getDoc(docRef);
-                return docSnap.exists() ? docSnap.data().sorteio : null;
-            } catch (error) {
-                console.error("Erro ao buscar sorteio:", error);
-                return null;
-            }
-        }
-
         async function startDraw() {
             const userName = normalizeName(document.getElementById("userName").value);
-
-            if (!userName) {
-                alert("Por favor, insira seu nome.");
+            const password = document.getElementById("password").value;
+            if (!userName || !password) {
+                alert("Por favor, insira seu nome e senha.");
                 return;
             }
+
+            // Salvar o nome e a senha no Firestore
+            const userRef = db.collection('users').doc(userName);
+            const userDoc = await userRef.get();
+
+            if (userDoc.exists) {
+                alert("Você já fez o sorteio.");
+                return;
+            }
+
+            await userRef.set({
+                password: password,
+                name: userName
+            });
 
             const filteredNames = names.filter(name => normalizeName(name) !== userName);
             if (filteredNames.length === 0) {
@@ -133,40 +83,40 @@
             const randomIndex = Math.floor(Math.random() * filteredNames.length);
             const drawnName = filteredNames[randomIndex];
 
-            await saveResult(userName, drawnName);
+            // Salvar o resultado do sorteio no Firestore
+            await userRef.update({
+                drawnName: drawnName
+            });
+
             document.getElementById("result").innerHTML = `<strong>Você tirou: ${drawnName}!</strong>`;
         }
 
-        document.addEventListener('DOMContentLoaded', async () => {
+        document.addEventListener('DOMContentLoaded', () => {
             const userNameInput = document.getElementById("userName");
-            const drawButton = document.getElementById("drawButton");
-            const storedData = localStorage.getItem('amigoSecreto');
+            const passwordInput = document.getElementById("password");
+            const nextButton = document.getElementById("nextButton");
+            const startDrawButton = document.getElementById("startDraw");
 
-            if (storedData) {
-                const { userName, drawnName } = JSON.parse(storedData);
-                document.getElementById("result").innerHTML = `<strong>Você tirou: ${drawnName}!</strong>`;
-                userNameInput.value = userName;
-                drawButton.disabled = true;
-                userNameInput.disabled = true;
-            } else {
-                userNameInput.disabled = false;
-                drawButton.disabled = false;
+            // Passo 1: Nome
+            nextButton.addEventListener("click", () => {
+                const userName = normalizeName(userNameInput.value);
+                if (!userName) {
+                    alert("Por favor, insira seu nome.");
+                    return;
+                }
 
-                drawButton.addEventListener("click", async () => {
-                    const userName = normalizeName(userNameInput.value);
-                    const existingResult = await getResult(userName);
+                // Mostrar a criação da senha
+                document.getElementById("nameInput").style.display = "none";
+                document.getElementById("passwordInput").style.display = "block";
+            });
 
-                    if (existingResult) {
-                        document.getElementById("result").innerHTML = `<strong>Você já tirou: ${existingResult}!</strong>`;
-                        drawButton.disabled = true;
-                        userNameInput.disabled = true;
-                    } else {
-                        await startDraw();
-                        drawButton.disabled = true;
-                        userNameInput.disabled = true;
-                    }
-                });
-            }
+            // Passo 2: Sorteio após senha
+            startDrawButton.addEventListener("click", () => {
+                startDraw();
+                startDrawButton.disabled = true;
+                passwordInput.disabled = true;
+                nextButton.disabled = true;
+            });
         });
     </script>
 </body>

@@ -80,7 +80,7 @@
 <script src="https://www.gstatic.com/firebasejs/9.17.0/firebase-firestore.js"></script>
 
 <script type="module">
-    // Sua configuração do Firebase
+    // Configuração do Firebase
     const firebaseConfig = {
         apiKey: "SUA_API_KEY",
         authDomain: "SEU_AUTH_DOMAIN",
@@ -90,7 +90,6 @@
         appId: "SEU_APP_ID"
     };
 
-    // Inicializando o Firebase
     const app = firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore(app);
 
@@ -148,6 +147,7 @@
         const nextButton = document.getElementById("nextButton");
         const startDrawButton = document.getElementById("startDraw");
 
+        // Passo 1: Nome
         nextButton.addEventListener("click", async () => {
             const userName = normalizeName(userNameInput.value);
             if (!userName) {
@@ -155,7 +155,7 @@
                 return;
             }
 
-            // Verifica se o nome já existe no banco de dados do Firebase
+            // Verificar se o nome já existe no banco de dados do Firebase
             const userRef = db.collection('users').doc(userName);
             const userDoc = await userRef.get();
 
@@ -166,7 +166,7 @@
                 startDrawButton.disabled = false;
                 passwordInput.placeholder = "Digite sua senha";
             } else {
-                // Se o nome não existe, cria um novo
+                // Se o nome não existe, cria uma nova conta
                 document.getElementById("nameInput").style.display = "none";
                 document.getElementById("passwordInput").style.display = "block";
                 startDrawButton.disabled = false;
@@ -174,7 +174,8 @@
             }
         });
 
-        startDrawButton.addEventListener("click", () => {
+        // Passo 2: Senha - Cadastro ou Login
+        startDrawButton.addEventListener("click", async () => {
             const userName = normalizeName(userNameInput.value);
             const password = passwordInput.value;
             if (!password) {
@@ -183,15 +184,15 @@
             }
 
             const userRef = db.collection('users').doc(userName);
-            userRef.get().then((userDoc) => {
-                if (userDoc.exists) {
-                    // Se o usuário já existe, faz o login e sorteio
-                    startDraw(userName, password);
-                } else {
-                    // Se não existir, cria uma nova conta
-                    createAccount(userName, password);
-                }
-            });
+            const userDoc = await userRef.get();
+
+            if (userDoc.exists) {
+                // Se o usuário já existe, faz login e sorteio
+                startDraw(userName, password);
+            } else {
+                // Se não existir, cria uma nova conta
+                createAccount(userName, password);
+            }
         });
     });
 </script>

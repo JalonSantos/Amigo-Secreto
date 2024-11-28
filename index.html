@@ -77,24 +77,24 @@
 </div>
 
 <!-- Scripts do Firebase -->
-<script src="https://www.gstatic.com/firebasejs/9.17.0/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.17.0/firebase-firestore.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.0.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.0.0/firebase-firestore.js"></script>
 
 <script>
     // Configuração do Firebase
     const firebaseConfig = {
         apiKey: "AIzaSyB0luDWLYVo32_4sb-CZBMbzQhfOXGaWQI",
-            authDomain: "amigosecreto-6f612.firebaseapp.com",
-            projectId: "amigosecreto-6f612",
-            storageBucket: "amigosecreto-6f612.firebasestorage.app",
-            messagingSenderId: "451995498899",
-            appId: "1:451995498899:web:038e98ff1742ff581d9066",
-            measurementId: "G-8X7LQ4HH6K"
+        authDomain: "amigosecreto-6f612.firebaseapp.com",
+        projectId: "amigosecreto-6f612",
+        storageBucket: "amigosecreto-6f612.firebasestorage.app",
+        messagingSenderId: "451995498899",
+        appId: "1:451995498899:web:038e98ff1742ff581d9066",
+        measurementId: "G-8X7LQ4HH6K"
     };
 
     // Inicializar o Firebase
-    const app = firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore(app);
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
 
     const names = ["Mayane", "Fernanda", "Alexsandro", "Jalon", "Ary", "Bernardo", "Emanuelle", "Bruno"];
 

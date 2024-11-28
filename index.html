@@ -84,37 +84,39 @@
         });
 
         alert("Sorteio resetado com sucesso!");
+        document.getElementById("result").innerHTML = "";
+        document.getElementById("drawButton").disabled = false; // Reabilitar o botão de sorteio após reset
     }
 
     document.addEventListener('DOMContentLoaded', () => {
         const drawButton = document.getElementById("drawButton");
         const resetButton = document.getElementById("resetButton");
 
+        // Verificar se o botão de sorteio está disponível
         if (drawButton) {
             drawButton.addEventListener("click", startDraw);
         }
 
+        // Verificar se o botão de reset está disponível
         if (resetButton) {
             resetButton.addEventListener("click", async () => {
                 const password = prompt("Digite a senha para resetar o sorteio:");
-                if (password === "195273") {
+                if (password === "minhaSenha123") {
                     await resetFirestore();
-                    document.getElementById("result").innerHTML = "";
-                    document.getElementById("drawButton").disabled = false; // Habilitar o botão para o sorteio
                 } else {
                     alert("Senha incorreta. Acesso negado.");
                 }
             });
+
+            // Definir o botão de reset como escondido ao carregar a página
+            resetButton.style.display = "none";
         }
 
-        // Verificar se o sorteio foi resetado e garantir que o botão de sorteio esteja disponível
-        const userNameInput = document.getElementById("userName").value;
-        const userName = normalizeName(userNameInput);
-        getResult(userName).then((savedResult) => {
-            if (!savedResult) {
-                document.getElementById("drawButton").disabled = false; // Habilitar o botão de sorteio se o sorteio foi resetado
-                document.getElementById("result").innerHTML = "";
+        // Lógica para exibir ou ocultar o botão de reset conforme necessário
+        setTimeout(() => {
+            if (resetButton && drawButton) {
+                resetButton.style.display = "inline-block"; // Mostrar o botão de reset após algum tempo (opcional)
             }
-        });
+        }, 1000); // Exemplo: 1 segundo após a página carregar
     });
 </script>

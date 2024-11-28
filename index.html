@@ -37,10 +37,6 @@
         button:hover {
             background-color: #45a049;
         }
-        button:disabled {
-            background-color: #ccc;
-            cursor: not-allowed;
-        }
         input {
             padding: 10px;
             width: 100%;
@@ -55,29 +51,45 @@
             color: #333;
         }
     </style>
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-firestore.js"></script>
 </head>
 <body>
     <div class="container">
-        <h1>Bem-vindo ao Amigo Secreto!</h1>
-        <p>Insira seu nome abaixo e clique em "Sortear" para descobrir quem será seu amigo secreto!</p>
-
-        <input type="text" id="userName" placeholder="Digite seu nome aqui">
+        <h1>Amigo Secreto</h1>
+        <p>Insira seu nome e descubra quem você tirou!</p>
+        <input type="text" id="userName" placeholder="Digite seu nome">
         <button id="drawButton">Sortear</button>
-        <button id="resetButton" style="display: none;">Resetar Sorteio</button>
-
         <div class="result" id="result"></div>
+        <button id="resetButton" style="display: none;">Resetar Sorteio</button>
     </div>
 
     <script type="module">
-        document.addEventListener('DOMContentLoaded', () => {
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.17.1/firebase-app.js";
+        import { getFirestore, doc, getDoc, setDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/9.17.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyB0luDWLYVo32_4sb-CZBMbzQhfOXGaWQI",
+            authDomain: "amigosecreto-6f612.firebaseapp.com",
+            projectId: "amigosecreto-6f612",
+            storageBucket: "amigosecreto-6f612.firebasestorage.app",
+            messagingSenderId: "451995498899",
+            appId: "1:451995498899:web:038e98ff1742ff581d9066",
+            measurementId: "G-8X7LQ4HH6K"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        document.addEventListener("DOMContentLoaded", () => {
             const drawButton = document.getElementById("drawButton");
             const resetButton = document.getElementById("resetButton");
             const resultDiv = document.getElementById("result");
 
             const names = ["Mayane", "Fernanda", "Alexsandro", "Jalon", "Ary", "Bernardo", "Emanuelle", "Bruno"];
 
-            // Função para sortear
-            function startDraw() {
+            async function startDraw() {
                 const userName = document.getElementById("userName").value.trim();
 
                 if (!userName) {
@@ -85,41 +97,46 @@
                     return;
                 }
 
-                // Verifica se o usuário já fez o sorteio
-                const storedResult = localStorage.getItem(userName);
-
-                if (storedResult) {
-                    resultDiv.innerHTML = `<strong>${userName}, você já tirou: ${storedResult}!</strong>`;
+                if (!names.includes(userName)) {
+                    alert("Nome inválido ou não está na lista.");
                     return;
                 }
 
-                // Sorteia um nome aleatório que ainda não foi sorteado
-                const availableNames = names.filter(name => !Object.values(localStorage).includes(name));
+                const docRef = doc(db, "amigoSecreto", userName);
+                const docSnap = await getDoc(docRef);
+
+                if (docSnap.exists()) {
+                    resultDiv.innerHTML = `<strong>${userName}, você já tirou: ${docSnap.data().amigo}</strong>`;
+                    return;
+                }
+
+                const availableNames = names.filter(name => name !== userName && !await isNameDrawn(name));
 
                 if (availableNames.length === 0) {
                     resultDiv.innerHTML = "<strong>Todos os nomes já foram sorteados!</strong>";
                     return;
                 }
 
-                const randomIndex = Math.floor(Math.random() * availableNames.length);
-                const drawnName = availableNames[randomIndex];
-
-                // Armazena o resultado no localStorage
-                localStorage.setItem(userName, drawnName);
-
-                resultDiv.innerHTML = `<strong>${userName}, você tirou: ${drawnName}!</strong>`;
+                const drawnName = availableNames[Math.floor(Math.random() * availableNames.length)];
+                await setDoc(docRef, { amigo: drawnName });
+                resultDiv.innerHTML = `<strong>${userName}, você tirou: ${drawnName}</strong>`;
             }
 
-            // Função para resetar sorteio (usada via console)
-            function resetDraw() {
-                localStorage.clear();
+            async function isNameDrawn(name) {
+                const querySnapshot = await getDoc(doc(db, "amigoSecreto", name));
+                return querySnapshot.exists();
+            }
+
+            async function resetDraw() {
+                for (let name of names) {
+                    await deleteDoc(doc(db, "amigoSecreto", name));
+                }
                 location.reload();
             }
 
             drawButton.addEventListener("click", startDraw);
             resetButton.addEventListener("click", resetDraw);
 
-            // Faz o botão de reset aparecer apenas via console
             window.showResetButton = function () {
                 resetButton.style.display = "block";
             };

@@ -1,87 +1,160 @@
-<script type="module">
-    import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js';
-    import { getFirestore, doc, setDoc, getDoc } from 'https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore.js';
-
-    const firebaseConfig = {
-        apiKey: "AIzaSyB0luDWLYVo32_4sb-CZBMbzQhfOXGaWQI",
-        authDomain: "amigosecreto-6f612.firebaseapp.com",
-        projectId: "amigosecreto-6f612",
-        storageBucket: "amigosecreto-6f612.firebasestorage.app",
-        messagingSenderId: "451995498899",
-        appId: "1:451995498899:web:038e98ff1742ff581d9066",
-        measurementId: "G-8X7LQ4HH6K"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
-    const names = ["Mayane", "Fernanda", "Alexsandro", "Jalon", "Ary", "Bernardo", "Emanuelle", "Bruno"];
-
-    function normalizeName(inputName) {
-        return inputName.trim().toUpperCase();
-    }
-
-    async function saveResult(userName, drawnName) {
-        try {
-            await setDoc(doc(db, 'sorteios', userName), { sorteio: drawnName });
-            localStorage.setItem('amigoSecreto', JSON.stringify({ userName, drawnName }));
-        } catch (error) {
-            console.error("Erro ao salvar no Firestore:", error);
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Amigo Secreto</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            color: #333;
+            text-align: center;
+            margin: 0;
+            padding: 20px;
         }
-    }
-
-    async function getResult(userName) {
-        try {
-            const docRef = doc(db, 'sorteios', userName);
-            const docSnap = await getDoc(docRef);
-            return docSnap.exists() ? docSnap.data().sorteio : null;
-        } catch (error) {
-            console.error("Erro ao buscar sorteio:", error);
-            return null;
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
         }
-    }
+        h1, h2 {
+            color: #555;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            margin: 10px 0;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+        input {
+            padding: 10px;
+            width: 100%;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        .result {
+            margin-top: 20px;
+            font-size: 18px;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Bem-vindo ao Amigo Secreto!</h1>
+        <h2>Data: 36 de Dezembro</h2>
+        <h2>Local: Algum local no planeta Terra </h2>
+        <p>Insira seu nome abaixo e clique em "Sortear" para descobrir quem será seu amigo secreto!</p>
+        
+        <input type="text" id="userName" placeholder="Digite seu nome aqui">
+        <button id="drawButton">Sortear</button>
+        
+        <div class="result" id="result"></div>
+    </div>
 
-    async function startDraw() {
-        const userNameInput = document.getElementById("userName").value;
-        const userName = normalizeName(userNameInput);
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js';
+        import { getFirestore, doc, setDoc, getDoc } from 'https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore.js';
 
-        if (!userName) {
-            alert("Por favor, insira seu nome.");
-            return;
+        const firebaseConfig = {
+            apiKey: "AIzaSyB0luDWLYVo32_4sb-CZBMbzQhfOXGaWQI",
+            authDomain: "amigosecreto-6f612.firebaseapp.com",
+            projectId: "amigosecreto-6f612",
+            storageBucket: "amigosecreto-6f612.firebasestorage.app",
+            messagingSenderId: "451995498899",
+            appId: "1:451995498899:web:038e98ff1742ff581d9066",
+            measurementId: "G-8X7LQ4HH6K"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const names = ["Mayane", "Fernanda", "Alexsandro", "Jalon", "Ary", "Bernardo", "Emanuelle", "Bruno"];
+
+        function normalizeName(inputName) {
+            return inputName.trim().toUpperCase();
         }
 
-        const savedResult = await getResult(userName);
-        if (savedResult) {
-            document.getElementById("result").innerHTML = `<strong>Você já sorteou: ${savedResult}!</strong>`;
-            document.getElementById("drawButton").disabled = true;
-            return;
+        async function saveResult(userName, drawnName) {
+            try {
+                await setDoc(doc(db, 'sorteios', userName), { sorteio: drawnName });
+                localStorage.setItem('amigoSecreto', JSON.stringify({ userName, drawnName }));
+            } catch (error) {
+                console.error("Erro ao salvar no Firestore:", error);
+            }
         }
 
-        const filteredNames = names.filter(name => normalizeName(name) !== userName);
-        if (filteredNames.length === 0) {
-            document.getElementById("result").innerText = "Não há mais nomes para sortear.";
-            return;
+        async function getResult(userName) {
+            try {
+                const docRef = doc(db, 'sorteios', userName);
+                const docSnap = await getDoc(docRef);
+                return docSnap.exists() ? docSnap.data().sorteio : null;
+            } catch (error) {
+                console.error("Erro ao buscar sorteio:", error);
+                return null;
+            }
         }
 
-        const randomIndex = Math.floor(Math.random() * filteredNames.length);
-        const drawnName = filteredNames[randomIndex];
+        async function startDraw() {
+            const userNameInput = document.getElementById("userName").value;
+            const userName = normalizeName(userNameInput);
 
-        await saveResult(userName, drawnName);
+            if (!userName) {
+                alert("Por favor, insira seu nome.");
+                return;
+            }
 
-        document.getElementById("result").innerHTML = `<strong>Você tirou: ${drawnName}!</strong>`;
-        document.getElementById("drawButton").disabled = true;
-    }
+            const savedResult = await getResult(userName);
+            if (savedResult) {
+                document.getElementById("result").innerHTML = `<strong>Você já sorteou: ${savedResult}!</strong>`;
+                document.getElementById("drawButton").disabled = true;
+                return;
+            }
 
-    document.addEventListener('DOMContentLoaded', async () => {
-        const drawButton = document.getElementById("drawButton");
-        const storedData = localStorage.getItem('amigoSecreto');
+            const filteredNames = names.filter(name => normalizeName(name) !== userName);
+            if (filteredNames.length === 0) {
+                document.getElementById("result").innerText = "Não há mais nomes para sortear.";
+                return;
+            }
 
-        if (storedData) {
-            const { userName, drawnName } = JSON.parse(storedData);
-            document.getElementById("userName").value = userName;
+            const randomIndex = Math.floor(Math.random() * filteredNames.length);
+            const drawnName = filteredNames[randomIndex];
+
+            await saveResult(userName, drawnName);
+
             document.getElementById("result").innerHTML = `<strong>Você tirou: ${drawnName}!</strong>`;
-            drawButton.disabled = true;
-        } else {
-            drawButton.addEventListener("click", startDraw);
+            document.getElementById("drawButton").disabled = true;
         }
-    });
-</script>
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            const drawButton = document.getElementById("drawButton");
+            const storedData = localStorage.getItem('amigoSecreto');
+
+            if (storedData) {
+                const { userName, drawnName } = JSON.parse(storedData);
+                document.getElementById("userName").value = userName;
+                document.getElementById("result").innerHTML = `<strong>Você tirou: ${drawnName}!</strong>`;
+                drawButton.disabled = true;
+            } else {
+                drawButton.addEventListener("click", startDraw);
+            }
+        });
+    </script>
+</body>
+</html>

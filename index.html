@@ -13,16 +13,18 @@
         <h1>Bem-vindo ao Amigo Secreto!</h1>
         <p>Insira seu nome e senha para participar do sorteio.</p>
 
+        <!-- Passo 1: Nome -->
         <div id="nameInput">
             <input type="text" id="userName" placeholder="Digite seu nome aqui">
             <button id="nextButton">Próximo</button>
         </div>
 
+        <!-- Passo 2: Criar ou inserir senha -->
         <div id="passwordInput" style="display: none;">
-            <input type="password" id="password" placeholder="Crie uma senha">
-            <button id="startDraw">Sortear</button>
+            <input type="password" id="password" placeholder="Crie ou insira sua senha">
+            <button id="startDraw" disabled>Sortear</button>
         </div>
-        
+
         <div class="result" id="result"></div>
     </div>
 
@@ -33,13 +35,12 @@
     <script type="module">
         // Sua configuração do Firebase
         const firebaseConfig = {
-            apiKey: "AIzaSyB0luDWLYVo32_4sb-CZBMbzQhfOXGaWQI",
-            authDomain: "amigosecreto-6f612.firebaseapp.com",
-            projectId: "amigosecreto-6f612",
-            storageBucket: "amigosecreto-6f612.firebasestorage.app",
-            messagingSenderId: "451995498899",
-            appId: "1:451995498899:web:038e98ff1742ff581d9066",
-            measurementId: "G-8X7LQ4HH6K"
+            apiKey: "SUA_API_KEY",
+            authDomain: "SEU_AUTH_DOMAIN",
+            projectId: "SEU_PROJECT_ID",
+            storageBucket: "SEU_STORAGE_BUCKET",
+            messagingSenderId: "SEU_MESSAGING_SENDER_ID",
+            appId: "SEU_APP_ID"
         };
 
         // Inicializando o Firebase
@@ -52,27 +53,20 @@
             return inputName.trim().toUpperCase();
         }
 
-        async function startDraw() {
-            const userName = normalizeName(document.getElementById("userName").value);
-            const password = document.getElementById("password").value;
-            if (!userName || !password) {
-                alert("Por favor, insira seu nome e senha.");
-                return;
-            }
-
-            // Salvar o nome e a senha no Firestore
+        async function startDraw(userName, password) {
             const userRef = db.collection('users').doc(userName);
             const userDoc = await userRef.get();
 
-            if (userDoc.exists) {
-                alert("Você já fez o sorteio.");
+            if (!userDoc.exists) {
+                alert("Usuário não encontrado. Tente novamente.");
                 return;
             }
 
-            await userRef.set({
-                password: password,
-                name: userName
-            });
+            const storedPassword = userDoc.data().password;
+            if (storedPassword !== password) {
+                alert("Senha incorreta.");
+                return;
+            }
 
             const filteredNames = names.filter(name => normalizeName(name) !== userName);
             if (filteredNames.length === 0) {
@@ -91,6 +85,23 @@
             document.getElementById("result").innerHTML = `<strong>Você tirou: ${drawnName}!</strong>`;
         }
 
+        async function createAccount(userName, password) {
+            const userRef = db.collection('users').doc(userName);
+            const userDoc = await userRef.get();
+
+            if (userDoc.exists) {
+                alert("Nome já registrado. Tente fazer login.");
+                return;
+            }
+
+            await userRef.set({
+                password: password,
+                name: userName
+            });
+
+            startDraw(userName, password);
+        }
+
         document.addEventListener('DOMContentLoaded', () => {
             const userNameInput = document.getElementById("userName");
             const passwordInput = document.getElementById("password");
@@ -98,24 +109,51 @@
             const startDrawButton = document.getElementById("startDraw");
 
             // Passo 1: Nome
-            nextButton.addEventListener("click", () => {
+            nextButton.addEventListener("click", async () => {
                 const userName = normalizeName(userNameInput.value);
                 if (!userName) {
                     alert("Por favor, insira seu nome.");
                     return;
                 }
 
-                // Mostrar a criação da senha
-                document.getElementById("nameInput").style.display = "none";
-                document.getElementById("passwordInput").style.display = "block";
+                // Verificar se o nome já existe no Firestore
+                const userRef = db.collection('users').doc(userName);
+                const userDoc = await userRef.get();
+
+                // Se já tiver usuário, pedir senha para login
+                if (userDoc.exists) {
+                    document.getElementById("nameInput").style.display = "none";
+                    document.getElementById("passwordInput").style.display = "block";
+                    document.getElementById("startDraw").disabled = false;
+                    passwordInput.placeholder = "Insira sua senha";
+                } else {
+                    // Se não, permitir criação de senha
+                    document.getElementById("nameInput").style.display = "none";
+                    document.getElementById("passwordInput").style.display = "block";
+                    document.getElementById("startDraw").disabled = false;
+                    passwordInput.placeholder = "Crie uma senha";
+                }
             });
 
-            // Passo 2: Sorteio após senha
+            // Passo 2: Criar ou inserir senha e iniciar sorteio
             startDrawButton.addEventListener("click", () => {
-                startDraw();
-                startDrawButton.disabled = true;
-                passwordInput.disabled = true;
-                nextButton.disabled = true;
+                const userName = normalizeName(userNameInput.value);
+                const password = passwordInput.value;
+                if (!password) {
+                    alert("Por favor, insira uma senha.");
+                    return;
+                }
+
+                const userRef = db.collection('users').doc(userName);
+                userRef.get().then((userDoc) => {
+                    if (userDoc.exists) {
+                        // Se o usuário já existir, faz o login e sorteio
+                        startDraw(userName, password);
+                    } else {
+                        // Se não existir, cria uma nova conta
+                        createAccount(userName, password);
+                    }
+                });
             });
         });
     </script>

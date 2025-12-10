@@ -1,205 +1,647 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Amigo Secreto</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
-            color: #333;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-        }
-        .container {
-            background-color: white;
-            padding: 30px;
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            width: 100%;
-            max-width: 400px;
-        }
-        h1 {
-            text-align: center;
-            font-size: 24px;
-        }
-        input {
-            width: 100%;
-            padding: 10px;
-            margin: 10px 0;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-        }
-        button {
-            background-color: #28a745;
-            color: white;
-            border: none;
-            padding: 10px;
-            width: 100%;
-            cursor: pointer;
-            border-radius: 4px;
-            font-size: 16px;
-        }
-        button:disabled {
-            background-color: #ddd;
-            cursor: not-allowed;
-        }
-        .result {
-            margin-top: 20px;
-            font-size: 18px;
-            text-align: center;
-        }
-    </style>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Amigo Secreto — Caixinha Surpresa</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&family=Pacifico&display=swap" rel="stylesheet">
+
+<style>
+  :root{
+    --bg:#0b1020;
+    --card:#0f1724;
+    --accent-1:#d64545; /* vermelho */
+    --accent-2:#2bb673; /* verde */
+    --gold:#f6c85f;
+    --glass: rgba(255,255,255,0.04);
+    --text:#f3f6f9;
+    --muted: rgba(243,246,249,0.7);
+  }
+
+  html,body{
+    height:100%;
+    margin:0;
+    font-family: "Montserrat", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+    background: radial-gradient(1200px 600px at 10% 10%, rgba(255,255,255,0.02), transparent),
+                radial-gradient(900px 500px at 90% 90%, rgba(255,255,255,0.015), transparent),
+                var(--bg);
+    color:var(--text);
+    -webkit-font-smoothing:antialiased;
+    -moz-osx-font-smoothing:grayscale;
+  }
+
+  .wrap{
+    min-height:100%;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:28px;
+  }
+
+  .card{
+    width:100%;
+    max-width:760px;
+    background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+    border-radius:18px;
+    box-shadow: 0 10px 40px rgba(2,6,23,0.7);
+    padding:28px;
+    display:grid;
+    grid-template-columns: 1fr 380px;
+    gap:24px;
+    align-items:center;
+    position:relative;
+    overflow:visible;
+  }
+
+  /* Left: info + input */
+  .left {
+    padding:12px 6px;
+  }
+
+  .brand {
+    display:flex;
+    gap:12px;
+    align-items:center;
+    margin-bottom:8px;
+  }
+
+  .logo {
+    width:56px;
+    height:56px;
+    border-radius:12px;
+    background: linear-gradient(135deg,var(--accent-1),var(--accent-2));
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    color:white;
+    font-weight:800;
+    font-family: "Pacifico";
+    font-size:20px;
+    box-shadow: 0 6px 18px rgba(203,36,36,0.15);
+  }
+
+  h1{
+    margin:0;
+    font-size:20px;
+    letter-spacing:0.2px;
+  }
+  p.lead{
+    margin:8px 0 18px 0;
+    color:var(--muted);
+    font-size:14px;
+  }
+
+  label{
+    display:block;
+    font-size:13px;
+    margin-bottom:6px;
+    color:var(--muted);
+  }
+
+  .input-row{
+    display:flex;
+    gap:10px;
+    align-items:center;
+  }
+
+  input[type="text"]{
+    flex:1;
+    padding:12px 14px;
+    border-radius:10px;
+    border:1px solid rgba(255,255,255,0.06);
+    background:var(--glass);
+    color:var(--text);
+    font-size:15px;
+    outline:none;
+    transition: box-shadow .18s ease, transform .12s ease;
+  }
+
+  input[type="text"]:focus{
+    box-shadow:0 6px 18px rgba(43,200,140,0.08);
+    transform: translateY(-2px);
+  }
+
+  button.primary {
+    background: linear-gradient(180deg,var(--accent-1), #b12f2f);
+    border:none;
+    color:white;
+    padding:12px 18px;
+    border-radius:10px;
+    font-weight:700;
+    cursor:pointer;
+    box-shadow: 0 8px 20px rgba(183,50,50,0.18);
+    transition: transform .12s ease, opacity .12s ease;
+  }
+
+  button.primary:active{ transform: translateY(2px); }
+  button.primary[disabled]{ opacity:.45; cursor:not-allowed; box-shadow:none; transform:none; }
+
+  .muted {
+    font-size:13px;
+    color:var(--muted);
+    margin-top:8px;
+  }
+
+  /* Right: caixa + resultado */
+  .right {
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    position:relative;
+  }
+
+  .box-stage {
+    width:260px;
+    height:260px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    position:relative;
+  }
+
+  /* Gift box */
+  .gift {
+    width:200px;
+    height:160px;
+    background: linear-gradient(180deg,#b71f1f 0%, #7f1212 100%);
+    border-radius:12px;
+    position:relative;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.6), inset 0 -6px 16px rgba(0,0,0,0.2);
+    transform-origin: center bottom;
+    transition: transform .35s ease;
+  }
+
+  .gift::before{ /* ribbon vertical */
+    content:"";
+    position:absolute;
+    width:28px;
+    left:50%;
+    transform:translateX(-50%);
+    top:0;
+    bottom:0;
+    background: linear-gradient(180deg, rgba(255,255,255,0.08), rgba(0,0,0,0.06));
+    border-radius:6px;
+  }
+
+  .lid {
+    width:230px;
+    height:60px;
+    background: linear-gradient(180deg,#d94b4b, #9a1515);
+    border-radius:14px;
+    position:absolute;
+    top:-30px;
+    left:50%;
+    transform:translateX(-50%);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    transform-origin: center left;
+    transition: transform .6s cubic-bezier(.2,.9,.2,1), top .25s;
+  }
+
+  .ribbon-bow {
+    position:absolute;
+    top:-8px;
+    left:50%;
+    transform:translateX(-50%);
+    width:62px;
+    height:44px;
+    background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.12), transparent 20%), linear-gradient(180deg,#ffd27b, #ffb84c);
+    border-radius:8px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-weight:800;
+    color:#7a3b00;
+    box-shadow: 0 8px 18px rgba(0,0,0,0.45);
+  }
+
+  /* shaking before open */
+  .gift.shake {
+    animation: shake 0.9s ease;
+  }
+  @keyframes shake{
+    0%{ transform: translateY(0) rotate(0deg); }
+    20%{ transform: translateY(-6px) rotate(-6deg); }
+    40%{ transform: translateY(4px) rotate(6deg); }
+    60%{ transform: translateY(-3px) rotate(-3deg); }
+    80%{ transform: translateY(2px) rotate(2deg); }
+    100%{ transform: translateY(0) rotate(0deg); }
+  }
+
+  /* opened state */
+  .gift.open .lid {
+    transform: translateX(-50%) rotate(-75deg);
+    top:-58px;
+  }
+
+  /* card result area */
+  .result-box {
+    margin-top:14px;
+    text-align:center;
+  }
+
+  .result-title {
+    font-size:16px;
+    color:var(--gold);
+    font-weight:800;
+    margin-bottom:6px;
+  }
+
+  .drawn-name {
+    font-size:22px;
+    font-weight:800;
+    color:#fff;
+    letter-spacing:1px;
+    min-height:34px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:10px;
+  }
+
+  .small-note {
+    font-size:13px;
+    color:var(--muted);
+    margin-top:8px;
+  }
+
+  /* confetti */
+  .confetti {
+    position:absolute;
+    left:0;
+    top:0;
+    width:100%;
+    height:100%;
+    pointer-events:none;
+    overflow:hidden;
+  }
+
+  .confetti .piece {
+    position:absolute;
+    width:10px;
+    height:14px;
+    opacity:0.95;
+    transform-origin:center;
+    will-change: transform;
+    animation: fall linear forwards;
+  }
+
+  @keyframes fall{
+    0%{ transform: translateY(-40vh) rotate(0deg); opacity:1; }
+    100%{ transform: translateY(120vh) rotate(720deg); opacity:0.95; }
+  }
+
+  /* reveal text animation */
+  .reveal {
+    display:inline-block;
+    transform-origin:center;
+    animation: revealUp .9s cubic-bezier(.2,.9,.2,1) forwards;
+    opacity:0;
+  }
+  @keyframes revealUp{
+    0%{ transform: translateY(18px) scale(.95); opacity:0; filter:blur(4px); }
+    60%{ transform: translateY(-6px) scale(1.02); opacity:1; filter:blur(0px); }
+    100%{ transform: translateY(0) scale(1); opacity:1; filter:blur(0); }
+  }
+
+  /* footer */
+  .footer {
+    position:absolute;
+    bottom:14px;
+    left:18px;
+    font-size:12px;
+    color:var(--muted);
+  }
+
+  /* Mobile */
+  @media (max-width:880px){
+    .card{ grid-template-columns: 1fr; max-width:520px; padding:18px; }
+    .right{ margin-top:10px; }
+    .box-stage{ transform:scale(.92); }
+  }
+</style>
 </head>
 <body>
+  <div class="wrap">
+    <div class="card" role="application" aria-labelledby="title">
+      <div class="left">
+        <div class="brand">
+          <div class="logo">AS</div>
+          <div>
+            <h1 id="title">Amigo Secreto</h1>
+            <div class="muted">Coloque seu nome e abra a caixinha para ver quem você tirou 🎁</div>
+          </div>
+        </div>
 
-<div class="container">
-    <h1>Amigo Secreto</h1>
+        <div style="margin-top:18px;">
+          <label for="userName">Digite seu nome:</label>
+          <div class="input-row">
+            <input id="userName" type="text" placeholder="Ex: João" autocomplete="off" aria-label="Nome do participante">
+            <button id="nextButton" class="primary">Próximo</button>
+          </div>
+          <div class="muted" style="margin-top:10px;">Somente os nomes pré-definidos podem participar. Caixa abre apenas uma vez por pessoa.</div>
+        </div>
 
-    <!-- Passo 1: Nome -->
-    <div id="nameInput">
-        <input type="text" id="userName" placeholder="Digite seu nome" required>
-        <button id="nextButton">Próximo</button>
+        <div id="controls" style="margin-top:20px; display:none;">
+          <div style="display:flex; gap:10px; align-items:center;">
+            <button id="startDraw" class="primary">Abrir Caixinha</button>
+            
+          </div>
+          <div class="muted small-note" style="margin-top:8px;">Se você já tirou alguém, o resultado será mostrado — você não poderá abrir novamente.</div>
+        </div>
+
+        <div class="result-box" style="margin-top:18px;">
+          <div class="result-title" id="resultTitle"></div>
+          <div class="drawn-name" id="drawnNameArea"></div>
+          <div class="small-note" id="statusNote"></div>
+        </div>
+
+      </div>
+
+      <div class="right">
+        <div class="box-stage" aria-hidden="true">
+          <div class="gift" id="giftBox" role="img" aria-label="Caixa fechada">
+            <div class="lid" id="lid"></div>
+            <div class="ribbon-bow">🎀</div>
+          </div>
+
+          <!-- confetti layer -->
+          <div class="confetti" id="confettiLayer" aria-hidden="true"></div>
+        </div>
+
+        <div class="footer"></div>
+      </div>
     </div>
+  </div>
 
-    <!-- Passo 2: Senha -->
-    <div id="passwordInput" style="display: none;">
-        <input type="password" id="password" placeholder="Digite sua senha" required>
-        <button id="startDraw" disabled>Sortear</button>
-    </div>
+  <!-- Firebase (v8) -->
+  <script src="https://www.gstatic.com/firebasejs/8.0.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.0.0/firebase-firestore.js"></script>
 
-    <!-- Resultado -->
-    <div id="result" class="result"></div>
-</div>
+  <script>
+/* -----------------------------
+   CONFIGURAÇÃO FIREBASE (substitua se quiser)
+   ----------------------------- */
+const firebaseConfig = {
+  apiKey: "AIzaSyB0luDWLYVo32_4sb-CZBMbzQhfOXGaWQI",
+  authDomain: "amigosecreto-6f612.firebaseapp.com",
+  projectId: "amigosecreto-6f612",
+  storageBucket: "amigosecreto-6f612.firebasestorage.app",
+  messagingSenderId: "451995498899",
+  appId: "1:451995498899:web:038e98ff1742ff581d9066",
+  measurementId: "G-8X7LQ4HH6K"
+};
 
-<!-- Scripts do Firebase -->
-<script src="https://www.gstatic.com/firebasejs/8.0.0/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.0.0/firebase-firestore.js"></script>
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
 
-<script>
-    // Configuração do Firebase
-    const firebaseConfig = {
-        apiKey: "AIzaSyB0luDWLYVo32_4sb-CZBMbzQhfOXGaWQI",
-        authDomain: "amigosecreto-6f612.firebaseapp.com",
-        projectId: "amigosecreto-6f612",
-        storageBucket: "amigosecreto-6f612.firebasestorage.app",
-        messagingSenderId: "451995498899",
-        appId: "1:451995498899:web:038e98ff1742ff581d9066",
-        measurementId: "G-8X7LQ4HH6K"
-    };
+/* -----------------------------
+   LISTA DE PARTICIPANTES (PADRONIZADA)
+   ----------------------------- */
+const names = ["MAYANE", "MAYLLA", "HAMILTON", "BERNARDO", "MÁRCIA", "BRUNO"];
 
-    // Inicializar o Firebase
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
+/* -----------------------------
+   UTIL / NORMALIZAÇÃO
+   ----------------------------- */
+function normalizeName(name){
+  return String(name || "").trim().toUpperCase();
+}
 
-    const names = ["Mayane", "Fernanda", "Alexsandro", "Jalon", "Ary", "Bernardo", "Emanuelle", "Bruno"];
+/* -----------------------------
+   ELEMENTOS UI
+   ----------------------------- */
+const userNameInput = document.getElementById("userName");
+const nextButton = document.getElementById("nextButton");
+const controls = document.getElementById("controls");
+const startDrawButton = document.getElementById("startDraw");
+const drawnNameArea = document.getElementById("drawnNameArea");
+const resultTitle = document.getElementById("resultTitle");
+const statusNote = document.getElementById("statusNote");
+const giftBox = document.getElementById("giftBox");
+const lid = document.getElementById("lid");
+const confettiLayer = document.getElementById("confettiLayer");
+const resetLocal = document.getElementById("resetLocal");
 
-    function normalizeName(inputName) {
-        return inputName.trim().toUpperCase();
+/* -----------------------------
+   ESTADO
+   ----------------------------- */
+let currentNormalized = "";
+let isDrawing = false;
+
+/* -----------------------------
+   FUNÇÃO: Criar confetes (simples)
+   ----------------------------- */
+function launchConfetti(count = 28){
+  confettiLayer.innerHTML = "";
+  const colors = ["#ff7675","#ffb86b","#f6c85f","#7ef3b2","#7bc6ff","#d9a7ff"];
+  const w = confettiLayer.clientWidth;
+  for(let i=0;i<count;i++){
+    const piece = document.createElement("div");
+    piece.className = "piece";
+    piece.style.left = Math.random()*100 + "%";
+    piece.style.background = colors[Math.floor(Math.random()*colors.length)];
+    piece.style.width = (8 + Math.random()*10) + "px";
+    piece.style.height = (10 + Math.random()*18) + "px";
+    piece.style.top = (Math.random()*10 - 20) + "vh";
+    piece.style.opacity = 0.95;
+    const delay = Math.random()*0.15;
+    piece.style.animationDuration = (1.6 + Math.random()*1.4) + "s";
+    piece.style.animationDelay = delay + "s";
+    piece.style.transform = "rotate(" + (Math.random()*360) + "deg)";
+    confettiLayer.appendChild(piece);
+  }
+  // remove after long time
+  setTimeout(()=> confettiLayer.innerHTML = "", 4000);
+}
+
+/* -----------------------------
+   LÓGICA: Verifica se usuário existe e se já sorteou
+   ----------------------------- */
+async function checkUserStatus(userName){
+  const userRef = db.collection("users").doc(userName);
+  const userDoc = await userRef.get();
+
+  if(userDoc.exists && userDoc.data().hasDrawn){
+    // já sorteou
+    const drawn = userDoc.data().drawnName || "(anônimo)";
+    showResult(drawn, true);
+    return { exists:true, hasDrawn:true, drawn };
+  }
+
+  return { exists: userDoc.exists, hasDrawn:false };
+}
+
+/* -----------------------------
+   LÓGICA: Sorteio único e sem repetição
+   ----------------------------- */
+async function performDraw(userName){
+  if(isDrawing) return;
+  isDrawing = true;
+  startDrawButton.disabled = true;
+
+  try{
+    const userRef = db.collection("users").doc(userName);
+    const userDoc = await userRef.get();
+    if(userDoc.exists && userDoc.data().hasDrawn){
+      // Se já sorteou entre as requests
+      const drawn = userDoc.data().drawnName;
+      showResult(drawn, true);
+      isDrawing = false;
+      return;
     }
 
-    async function startDraw(userName, password) {
-        const userRef = db.collection('users').doc(userName);
-        const userDoc = await userRef.get();
+    // pegar lista de usados
+    const statusRef = db.collection("draw").doc("status");
+    const statusDoc = await statusRef.get();
+    const used = statusDoc.exists ? statusDoc.data().used || [] : [];
 
-        if (!userDoc.exists) {
-            alert("Usuário não encontrado.");
-            return;
-        }
+    // disponiveis: not self e not used
+    const available = names.filter(n => n !== userName && !used.includes(n));
 
-        const storedPassword = userDoc.data().password;
-        if (storedPassword !== password) {
-            alert("Senha incorreta.");
-            return;
-        }
-
-        // Filtrando a lista para não incluir o nome do próprio usuário
-        const filteredNames = names.filter(name => normalizeName(name) !== userName);
-        const randomIndex = Math.floor(Math.random() * filteredNames.length);
-        const drawnName = filteredNames[randomIndex];
-
-        await userRef.update({
-            drawnName: drawnName
-        });
-
-        document.getElementById("result").innerHTML = `Você tirou: <strong>${drawnName}</strong>`;
+    if(available.length === 0){
+      showResult(null, false, "Não há mais nomes disponíveis para sorteio.");
+      isDrawing = false;
+      return;
     }
 
-    async function createAccount(userName, password) {
-        const userRef = db.collection('users').doc(userName);
-        const userDoc = await userRef.get();
+    // animação: shake gift
+    giftBox.classList.remove("open");
+    giftBox.classList.add("shake");
+    resultTitle.textContent = "Abrindo a caixinha...";
 
-        if (userDoc.exists) {
-            alert("Nome já registrado. Tente fazer login.");
-            return;
-        }
+    // curto delay antes de abrir (simula suspense)
+    await new Promise(r => setTimeout(r, 900));
 
-        await userRef.set({
-            password: password
-        });
+    // escolher aleatoriamente
+    const randomIndex = Math.floor(Math.random() * available.length);
+    const drawn = available[randomIndex];
 
-        startDraw(userName, password);
-    }
+    // abrir a caixa (visual)
+    giftBox.classList.remove("shake");
+    giftBox.classList.add("open");
 
-    document.addEventListener('DOMContentLoaded', () => {
-        const userNameInput = document.getElementById("userName");
-        const passwordInput = document.getElementById("password");
-        const nextButton = document.getElementById("nextButton");
-        const startDrawButton = document.getElementById("startDraw");
+    // confetti
+    launchConfetti(38);
 
-        // Passo 1: Nome
-        nextButton.addEventListener("click", async () => {
-            const userName = normalizeName(userNameInput.value);
-            if (!userName) {
-                alert("Por favor, insira seu nome.");
-                return;
-            }
+    // gravar no usuário e marcar usado (atomic-ish)
+    await userRef.set({ drawnName: drawn, hasDrawn: true });
 
-            // Verificar se o nome já existe no banco de dados do Firebase
-            const userRef = db.collection('users').doc(userName);
-            const userDoc = await userRef.get();
+    // marcar array union
+    await statusRef.set({ used: firebase.firestore.FieldValue.arrayUnion(drawn) }, { merge:true });
 
-            if (userDoc.exists) {
-                // Se o nome já existe, vai para a parte de senha
-                document.getElementById("nameInput").style.display = "none";
-                document.getElementById("passwordInput").style.display = "block";
-                startDrawButton.disabled = false;
-                passwordInput.placeholder = "Digite sua senha";
-            } else {
-                // Se o nome não existe, cria uma nova conta
-                document.getElementById("nameInput").style.display = "none";
-                document.getElementById("passwordInput").style.display = "block";
-                startDrawButton.disabled = false;
-                passwordInput.placeholder = "Crie uma senha";
-            }
-        });
+    // efeito de revelação do texto
+    showResult(drawn, true);
 
-        // Passo 2: Senha - Cadastro ou Login
-        startDrawButton.addEventListener("click", async () => {
-            const userName = normalizeName(userNameInput.value);
-            const password = passwordInput.value;
-            if (!password) {
-                alert("Por favor, insira uma senha.");
-                return;
-            }
+  }catch(err){
+    console.error("Erro no sorteio:", err);
+    showResult(null, false, "Ocorreu um erro. Tente novamente.");
+  } finally {
+    isDrawing = false;
+  }
+}
 
-            const userRef = db.collection('users').doc(userName);
-            const userDoc = await userRef.get();
+/* -----------------------------
+   UI: Mostrar resultado (revelado)
+   ----------------------------- */
+function showResult(name, confirmed = false, message = null){
+  if(message){
+    resultTitle.textContent = message;
+    drawnNameArea.innerHTML = "";
+    statusNote.textContent = "";
+    return;
+  }
 
-            if (userDoc.exists) {
-                // Se o usuário já existe, faz login e sorteio
-                startDraw(userName, password);
-            } else {
-                // Se não existir, cria uma nova conta
-                createAccount(userName, password);
-            }
-        });
-    });
-</script>
+  if(confirmed && name){
+    resultTitle.textContent = "Você tirou:";
+    // animação de reveal
+    drawnNameArea.innerHTML = `<span class="reveal">${escapeHtml(name)}</span>`;
+    statusNote.textContent = "Esse sorteio foi salvo. Você não poderá abrir novamente.";
+  } else {
+    resultTitle.textContent = "Resultado:";
+    drawnNameArea.textContent = name || "(nenhum)";
+    statusNote.textContent = "";
+  }
+}
 
+/* -----------------------------
+   Segurança/escape simples para texto
+   ----------------------------- */
+function escapeHtml(s){
+  return String(s).replace(/[&<>"']/g, (m)=> ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":"&#39;"}[m]));
+}
+
+/* -----------------------------
+   EVENTOS UI
+   ----------------------------- */
+nextButton.addEventListener("click", async ()=>{
+  const raw = userNameInput.value;
+  const user = normalizeName(raw);
+
+  if(!user){
+    alert("Digite seu nome.");
+    return;
+  }
+
+  // verificar se faz parte da lista
+  const allowed = names.includes(user);
+  if(!allowed){
+    alert("Esse nome não está na lista de participantes.");
+    return;
+  }
+
+  // salvar estado atual
+  currentNormalized = user;
+
+  // mostrar controles
+  controls.style.display = "block";
+  nextButton.disabled = true;
+  userNameInput.disabled = true;
+
+  // checar status no Firestore
+  resultTitle.textContent = "Verificando...";
+  const st = await checkUserStatus(currentNormalized);
+  if(!st.hasDrawn){
+    resultTitle.textContent = "Pronto para abrir a caixinha!";
+    drawnNameArea.textContent = "";
+    statusNote.textContent = "Clique em Abrir Caixinha para ver quem você tirou.";
+  }
+});
+
+/* botão de abrir */
+startDrawButton.addEventListener("click", async ()=>{
+  if(!currentNormalized){
+    alert("Primeiro clique em Próximo e selecione seu nome.");
+    return;
+  }
+  await performDraw(currentNormalized);
+});
+
+/* botão ver status - para debug / ver o used list local (não necessário) */
+resetLocal.addEventListener("click", async ()=>{
+  try{
+    const statusRef = db.collection("draw").doc("status");
+    const statusDoc = await statusRef.get();
+    const used = statusDoc.exists ? statusDoc.data().used || [] : [];
+    alert("Nomes já usados:\n" + (used.length ? used.join(", ") : "(nenhum)"));
+  }catch(e){
+    alert("Erro ao buscar status.");
+  }
+});
+
+/* habilitar envio com Enter */
+userNameInput.addEventListener("keydown", (e)=>{
+  if(e.key === "Enter") nextButton.click();
+});
+
+/* -----------------------------
+   BOAS PRÁTICAS: limpar espaços extras da lista (caso queira)
+   ----------------------------- */
+(function normalizeList(){
+  for(let i=0;i<names.length;i++){
+    names[i] = normalizeName(names[i]);
+  }
+})();
+
+  </script>
 </body>
 </html>
